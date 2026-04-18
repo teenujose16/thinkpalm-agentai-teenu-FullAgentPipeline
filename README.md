@@ -231,3 +231,4 @@ The AI pipeline uses 4 specialized prompts in sequence:
 Each prompt instructs the model to return only valid JSON or raw TSX — no markdown, no explanation — ensuring reliable parsing.
 
 ## Demo Video
+link:- https://www.loom.com/share/b16ae0b5c365446e8c37f48de3dba02c
