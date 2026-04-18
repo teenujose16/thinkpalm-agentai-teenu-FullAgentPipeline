@@ -201,17 +201,17 @@ src/
 
 ## Key Features
 
-Streaming pipeline — see each component generate in real time via Server-Sent Events
-Recursive component tree — proper parent-child nesting, not a flat list
-Tool-calling agents — agents use function tools to validate and improve output
-Post-generation summary — a final report is generated and streamed after code generation
-Session + persistent memory — history survives page refresh via localStorage
-Server-side persistence — agent memory survives server restarts via filesystem-backed store
-Accessible code output — every generated component includes aria labels and semantic HTML
-Export options — copy individual components or download full ZIP with index.tsx
-Sample PRDs — 3 built-in samples to demo instantly (e-commerce, dashboard, onboarding)
-Dark mode — full light/dark support via next-themes
-Rate limiting — API route protected with 10 requests/minute per IP
+- **Streaming pipeline** — see each component generate in real time via Server-Sent Events
+- **Recursive component tree** — proper parent-child nesting, not a flat list
+- **Tool-calling agents** — agents use function tools to validate and improve output
+- **Post-generation summary** — a final report is generated and streamed after code generation
+- **Session + persistent memory** — history survives page refresh via localStorage
+- **Server-side persistence** — agent memory survives server restarts via filesystem-backed store
+- **Accessible code output** — every generated component includes aria labels and semantic HTML
+- **Export options** — copy individual components or download full ZIP with index.tsx
+- **Sample PRDs** — 3 built-in samples to demo instantly (e-commerce, dashboard, onboarding)
+- **Dark mode** — full light/dark support via next-themes
+- **Rate limiting** — API route protected with 10 requests/minute per IP
 Environment Variables
 Variable	Description	Required
 GROQ_API_KEY	Your Groq API key from console.groq.com	Yes
