@@ -65,7 +65,8 @@ Filesystem Memory Store (src/lib/memory-store.ts)
 
 Persists agent memory on the server in .memory-store.json
 Supports writing per-key values and reading full memory snapshots across sessions
-Pipeline Flow
+
+## Pipeline Flow
 User PRD Input
       │
       ▼
@@ -100,20 +101,21 @@ useGenerate Hook (SSE consumer)
       │
       ▼
 3-Panel UI (PRD Editor | Tree View | Code Export)
-Tech Stack
-Technology	Purpose
-Next.js 14 (App Router)	Framework
-TypeScript	Type safety
-Tailwind CSS	Styling
-Groq SDK + Llama 3.3 70B	AI model (free)
-Zod	Schema validation
-Monaco Editor	PRD input editor
-Framer Motion	Animations
-React Syntax Highlighter	Code display
-JSZip	ZIP export
-StackBlitz SDK	Live preview
-next-themes	Dark mode
 
+## Tech Stack
+| Technology | Purpose |
+| :--- | :--- |
+| **Next.js 14 (App Router)** | Framework |
+| **TypeScript** | Type safety |
+| **Tailwind CSS** | Styling |
+| **Groq SDK + Llama 3.3 70B** | AI model (free) |
+| **Zod** | Schema validation |
+| **Monaco Editor** | PRD input editor |
+| **Framer Motion** | Animations |
+| **React Syntax Highlighter** | Code display |
+| **JSZip** | ZIP export |
+| **StackBlitz SDK** | Live preview |
+| **next-themes** | Dark mode |
 
 ## Features
 - **AI Prompt Engineering:** Specialized Groq usage with optimized prompt chains for generating high-quality React/Tailwind UI components from plain text PRDs.
