@@ -170,6 +170,7 @@ Navigate to [http://localhost:3000] to see the application.
 
 ## Project Structure
 
+```text
 src/
 ├── app/
 │   ├── page.tsx                  # Main 3-panel layout
@@ -192,6 +193,7 @@ src/
 │   └── CodeExport/              # Right panel: Syntax highlighted code + ZIP export
 └── types/
     └── component-tree.ts        # Zod schemas + TypeScript types
+```
 
 
 ## Key Features
