@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.env
+.env.local
+.memory-store.json
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+.DS_Store

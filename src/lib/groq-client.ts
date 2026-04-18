@@ -5,7 +5,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export default groq;
 
-export const MODEL = "llama-3.3-70b-versatile";
+export const MODEL = "llama-3.1-8b-instant";
 
 export type Message = {
   role: "system" | "user" | "assistant" | "tool";

@@ -85,7 +85,7 @@ const LAYOUT_PATTERN_BY_APP_TYPE: Record<string, string> = {
 
 function stripMarkdownFences(text: string): string {
   const trimmed = text.trim();
-  const match = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  const match = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
   return match ? match[1].trim() : trimmed;
 }
 

@@ -2,7 +2,7 @@
 
 import sdk from "@stackblitz/sdk";
 import type { ComponentNode, ComponentTree } from "@/types/component-tree";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TreeView } from "./TreeView";
 
 const EMPTY_ROOTS: ComponentNode[] = [];
@@ -52,7 +52,8 @@ const STACKBLITZ_BASE_FILES: Record<string, string> = {
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.395.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
@@ -75,6 +76,7 @@ export default defineConfig({
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SpecToUI Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body>
     <div id="root"></div>
@@ -115,6 +117,32 @@ createRoot(document.getElementById("root")!).render(<App />);
 `,
 };
 
+function generateAppTsx(roots: ComponentNode[], generatedCodes: Record<string, string>): string {
+  const availableRoots = roots.filter(r => generatedCodes[r.id] !== undefined);
+
+  const imports = availableRoots.map(r => {
+    const safeName = r.name.replace(/[^a-zA-Z0-9_$]/g, "");
+    const safeId = r.id.replace(/[^\w.-]+/g, "_");
+    return `import * as ${safeName}_Module from "./generated/${safeId}";
+const ${safeName} = ${safeName}_Module.default || ${safeName}_Module.${safeName} || Object.values(${safeName}_Module)[0] as React.ElementType;`;
+  }).join('\n');
+  const elements = availableRoots.map(r => {
+    const safeName = r.name.replace(/[^a-zA-Z0-9_$]/g, "");
+    return `      <${safeName} />`;
+  }).join('\n');
+  return `import React from "react";
+${imports}
+
+export default function App() {
+  return (
+    <main className="min-h-screen bg-white">
+${elements}
+    </main>
+  );
+}
+`;
+}
+
 function openStackBlitzWithCodes(generatedCodes: Record<string, string>) {
   const files: Record<string, string> = { ...STACKBLITZ_BASE_FILES };
   for (const [id, code] of Object.entries(generatedCodes)) {
@@ -143,6 +171,39 @@ export function ComponentPreview({
   );
 
   const hasGenerated = Object.keys(generatedCodes).length > 0;
+  const [embedReady, setEmbedReady] = useState(false);
+  const embedBootedRef = useRef(false);
+
+  useEffect(() => {
+    if (isLoading) {
+      setEmbedReady(false);
+      embedBootedRef.current = false;
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
+    if (embedReady && hasGenerated && !embedBootedRef.current) {
+      embedBootedRef.current = true;
+      const files: Record<string, string> = { ...STACKBLITZ_BASE_FILES };
+      for (const [id, code] of Object.entries(generatedCodes)) {
+        files[filePathForComponentId(id)] = code;
+      }
+      if (componentTree?.rootComponents) {
+        files["src/App.tsx"] = generateAppTsx(componentTree.rootComponents, generatedCodes);
+      }
+      sdk.embedProject("stackblitz-embed", {
+        title: "SpecToUI Preview",
+        template: "node",
+        files,
+      }, {
+        openFile: "src/App.tsx",
+        view: "preview",
+        hideExplorer: true,
+        theme: "dark",
+        height: "100%",
+      });
+    }
+  }, [embedReady, hasGenerated, generatedCodes, componentTree]);
 
   return (
     <div className="relative flex h-full min-h-0 flex-1 flex-col bg-white dark:bg-zinc-950">
@@ -187,151 +248,155 @@ export function ComponentPreview({
         </button>
       </div>
 
-      {activeTab === "tree" ? (
-        <div className="flex min-h-0 flex-1">
-          <aside className="w-64 shrink-0 overflow-y-auto border-r border-zinc-200 dark:border-zinc-800">
-            {roots.length > 0 ? (
-              <TreeView
-                nodes={roots}
-                selectedId={selectedNodeId}
-                onSelect={setSelectedNodeId}
-              />
-            ) : (
-              <p className="p-3 text-xs text-zinc-500 dark:text-zinc-400">
-                No component tree yet.
+      <div className={activeTab === "tree" ? "flex min-h-0 flex-1" : "hidden"}>
+        <aside className="w-64 shrink-0 overflow-y-auto border-r border-zinc-200 dark:border-zinc-800">
+          {roots.length > 0 ? (
+            <TreeView
+              nodes={roots}
+              selectedId={selectedNodeId}
+              onSelect={setSelectedNodeId}
+            />
+          ) : (
+            <p className="p-3 text-xs text-zinc-500 dark:text-zinc-400">
+              No component tree yet.
+            </p>
+          )}
+        </aside>
+        <div className="min-w-0 flex-1 overflow-y-auto p-4">
+          {selectedNode ? (
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                  {selectedNode.name}
+                </h2>
+                <span
+                  className={`rounded px-1.5 py-0.5 text-xs ${
+                    selectedNode.type === "layout"
+                      ? "bg-purple-100 text-purple-700"
+                      : selectedNode.type === "section"
+                        ? "bg-blue-100 text-blue-700"
+                        : selectedNode.type === "ui"
+                          ? "bg-green-100 text-green-700"
+                          : selectedNode.type === "form"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  {selectedNode.type}
+                </span>
+              </div>
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                {selectedNode.description}
               </p>
-            )}
-          </aside>
-          <div className="min-w-0 flex-1 overflow-y-auto p-4">
-            {selectedNode ? (
-              <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                    {selectedNode.name}
-                  </h2>
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-xs ${
-                      selectedNode.type === "layout"
-                        ? "bg-purple-100 text-purple-700"
-                        : selectedNode.type === "section"
-                          ? "bg-blue-100 text-blue-700"
-                          : selectedNode.type === "ui"
-                            ? "bg-green-100 text-green-700"
-                            : selectedNode.type === "form"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {selectedNode.type}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                  {selectedNode.description}
-                </p>
 
-                <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                  Props
-                </h3>
-                <div className="mt-2 overflow-x-auto rounded border border-zinc-200 dark:border-zinc-700">
-                  <table className="w-full min-w-[280px] text-sm">
-                    <thead>
-                      <tr className="border-b border-zinc-200 bg-zinc-100 text-left dark:border-zinc-700 dark:bg-zinc-800">
-                        <th className="px-3 py-2 font-medium text-zinc-700 dark:text-zinc-200">
-                          name
-                        </th>
-                        <th className="px-3 py-2 font-medium text-zinc-700 dark:text-zinc-200">
-                          type
-                        </th>
-                        <th className="px-3 py-2 font-medium text-zinc-700 dark:text-zinc-200">
-                          required
-                        </th>
+              <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Props
+              </h3>
+              <div className="mt-2 overflow-x-auto rounded border border-zinc-200 dark:border-zinc-700">
+                <table className="w-full min-w-[280px] text-sm">
+                  <thead>
+                    <tr className="border-b border-zinc-200 bg-zinc-100 text-left dark:border-zinc-700 dark:bg-zinc-800">
+                      <th className="px-3 py-2 font-medium text-zinc-700 dark:text-zinc-200">
+                        name
+                      </th>
+                      <th className="px-3 py-2 font-medium text-zinc-700 dark:text-zinc-200">
+                        type
+                      </th>
+                      <th className="px-3 py-2 font-medium text-zinc-700 dark:text-zinc-200">
+                        required
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedNode.props.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={3}
+                          className="px-3 py-2 text-zinc-500 dark:text-zinc-400"
+                        >
+                          No props declared.
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {selectedNode.props.length === 0 ? (
-                        <tr>
-                          <td
-                            colSpan={3}
-                            className="px-3 py-2 text-zinc-500 dark:text-zinc-400"
-                          >
-                            No props declared.
+                    ) : (
+                      selectedNode.props.map((p, i) => (
+                        <tr
+                          key={`${p.name}-${i}`}
+                          className={
+                            i % 2 === 0
+                              ? "bg-white dark:bg-zinc-950"
+                              : "bg-zinc-50 dark:bg-zinc-900/60"
+                          }
+                        >
+                          <td className="px-3 py-2 font-mono text-xs text-zinc-900 dark:text-zinc-100">
+                            {p.name}
+                          </td>
+                          <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">
+                            {p.type}
+                          </td>
+                          <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">
+                            {p.required ? "yes" : "no"}
                           </td>
                         </tr>
-                      ) : (
-                        selectedNode.props.map((p, i) => (
-                          <tr
-                            key={`${p.name}-${i}`}
-                            className={
-                              i % 2 === 0
-                                ? "bg-white dark:bg-zinc-950"
-                                : "bg-zinc-50 dark:bg-zinc-900/60"
-                            }
-                          >
-                            <td className="px-3 py-2 font-mono text-xs text-zinc-900 dark:text-zinc-100">
-                              {p.name}
-                            </td>
-                            <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">
-                              {p.type}
-                            </td>
-                            <td className="px-3 py-2 text-zinc-700 dark:text-zinc-300">
-                              {p.required ? "yes" : "no"}
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                  Tailwind classes
-                </h3>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {selectedNode.tailwindClasses.length === 0 ? (
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                      None
-                    </span>
-                  ) : (
-                    selectedNode.tailwindClasses.map((c) => (
-                      <code
-                        key={c}
-                        className="rounded bg-zinc-200 px-1.5 py-0.5 text-xs text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200"
-                      >
-                        {c}
-                      </code>
-                    ))
-                  )}
-                </div>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
-            ) : (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Select a component in the tree to see details.
-              </p>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-          {hasGenerated ? (
-            <>
-              <p className="max-w-md text-sm text-zinc-600 dark:text-zinc-400">
-                Export your components and open in StackBlitz to preview.
-              </p>
-              <button
-                type="button"
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
-                onClick={() => openStackBlitzWithCodes(generatedCodes)}
-              >
-                Open in StackBlitz
-              </button>
-            </>
+
+              <h3 className="mt-4 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Tailwind classes
+              </h3>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {selectedNode.tailwindClasses.length === 0 ? (
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    None
+                  </span>
+                ) : (
+                  selectedNode.tailwindClasses.map((c) => (
+                    <code
+                      key={c}
+                      className="rounded bg-zinc-200 px-1.5 py-0.5 text-xs text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200"
+                    >
+                      {c}
+                    </code>
+                  ))
+                )}
+              </div>
+            </div>
           ) : (
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              No components generated yet.
+              Select a component in the tree to see details.
             </p>
           )}
         </div>
-      )}
+      </div>
+
+      <div className={activeTab === "preview" ? "flex flex-1 flex-col h-full w-full" : "hidden"}>
+        {!embedReady ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center h-full">
+            {hasGenerated ? (
+              <>
+                <p className="max-w-md text-sm text-zinc-600 dark:text-zinc-400">
+                  Load your components in an embedded live preview.
+                </p>
+                <button
+                  type="button"
+                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                  onClick={() => setEmbedReady(true)}
+                >
+                  Start Live Preview
+                </button>
+              </>
+            ) : (
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                No components generated yet.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div id="stackblitz-embed" className="h-full w-full border-0 shadow-inner"></div>
+        )}
+      </div>
     </div>
   );
 }

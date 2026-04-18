@@ -42,22 +42,22 @@ const componentNodeSchema: z.ZodType<ComponentNodeBase> = z.lazy(() =>
     /** PascalCase component name (for example "Navbar", "HeroSection"). */
     name: z.string(),
     /** High-level category describing how this component is used. */
-    type: z.enum(["layout", "section", "ui", "form", "data"]),
+    type: z.enum(["layout", "section", "ui", "form", "data"]).catch("ui"),
     /** Human-readable summary of what this component represents or does. */
     description: z.string(),
     /** Declared props for this component instance. */
     props: z.array(
       z.object({
         /** Prop name as exposed to consumers or in JSX. */
-        name: z.string(),
+        name: z.string().catch("unknown"),
         /** TypeScript-style or conceptual type of the prop (for example "string", "ReactNode"). */
-        type: z.string(),
+        type: z.string().catch("any"),
         /** Whether callers must supply this prop. */
-        required: z.boolean(),
+        required: z.boolean().catch(false),
         /** Optional serialized default when the prop is omitted. */
         defaultValue: z.string().optional(),
       }),
-    ),
+    ).optional().default([]).catch([]),
     /** Tailwind CSS utility classes applied to this component's root element. */
     tailwindClasses: z.union([
       z.array(z.string()),

@@ -80,7 +80,8 @@ export class AgentMemory {
 
   clear(keepHistory = true): void {
     if (keepHistory) {
-      for (const key of [...this.store.keys()]) {
+      const keys = Array.from(this.store.keys());
+      for (const key of keys) {
         if (key !== "prd_history") {
           this.store.delete(key);
         }

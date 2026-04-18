@@ -49,7 +49,7 @@ export const GENERATOR_TOOLS = [
 function stripMarkdownFences(text: string): string {
   const trimmed = text.trim();
   const match = trimmed.match(
-    /^```(?:tsx|ts|jsx|js|javascript|typescript)?\s*([\s\S]*?)\s*```$/i,
+    /```(?:tsx|ts|jsx|js|javascript|typescript)?\s*([\s\S]*?)```/i,
   );
   return match ? match[1].trim() : trimmed;
 }
@@ -61,7 +61,7 @@ function buildSiblingContext(components: ComponentNode[]): string {
 }
 
 export class GeneratorAgent {
-  constructor(private memory: AgentMemory) {}
+  constructor(private memory: AgentMemory) { }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private executeTool(name: string, args: any): any {
@@ -193,8 +193,8 @@ export class GeneratorAgent {
         },
       ];
 
-      const { content, toolIssueHints } =
-        await this.runCompletionWithToolLoop(messages);
+      const content = await streamCompletion(messages as Message[], () => {}, 0.3, 4096);
+      const toolIssueHints: string[] = [];
 
       let finalCode = stripMarkdownFences(content);
       messages.push({ role: "assistant", content: finalCode });
@@ -219,7 +219,7 @@ export class GeneratorAgent {
           content: `Fix these issues:\n${fixList.join("\n")}`,
         });
         finalCode = stripMarkdownFences(
-          await streamCompletion(messages as Message[], () => {}, 0.3, 4096),
+          await streamCompletion(messages as Message[], () => { }, 0.3, 4096),
         );
       }
 
