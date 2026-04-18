@@ -212,29 +212,21 @@ src/
 - **Sample PRDs** — 3 built-in samples to demo instantly (e-commerce, dashboard, onboarding)
 - **Dark mode** — full light/dark support via next-themes
 - **Rate limiting** — API route protected with 10 requests/minute per IP
-Environment Variables
-Variable	Description	Required
-GROQ_API_KEY	Your Groq API key from console.groq.com	Yes
-How the Prompt Engineering Works
-The AI pipeline uses 4 specialized prompts in sequence:
-
-System prompt — establishes the AI as a senior frontend architect
-PRD parse prompt — extracts structured data (pages, features, user roles) from free-form text
-Component plan prompt — converts parsed PRD into a typed ComponentTree JSON
-Component code prompt — generates TSX for each node with TypeScript interfaces, Tailwind classes, and accessibility attributes
-Each prompt instructs the model to return only valid JSON or raw TSX — no markdown, no explanation — ensuring reliable parsing.
-
 ## Environment Variables
-Variable	Description	Required
-GROQ_API_KEY	Your Groq API key from console.groq.com	Yes
+
+| Variable | Description | Required |
+| :--- | :--- | :--- |
+| **GROQ_API_KEY** | Your Groq API key from [console.groq.com](https://console.groq.com/keys) | Yes |
 
 ## How the Prompt Engineering Works
+
 The AI pipeline uses 4 specialized prompts in sequence:
 
-1. System prompt — establishes the AI as a senior frontend architect
-2. PRD parse prompt — extracts structured data (pages, features, user roles) from free-form text
-3. Component plan prompt — converts parsed PRD into a typed ComponentTree JSON
-4. Component code prompt — generates TSX for each node with TypeScript interfaces, Tailwind classes, and accessibility attributes
+1. **System prompt** — establishes the AI as a senior frontend architect
+2. **PRD parse prompt** — extracts structured data (pages, features, user roles) from free-form text
+3. **Component plan prompt** — converts parsed PRD into a typed ComponentTree JSON
+4. **Component code prompt** — generates TSX for each node with TypeScript interfaces, Tailwind classes, and accessibility attributes
+
 Each prompt instructs the model to return only valid JSON or raw TSX — no markdown, no explanation — ensuring reliable parsing.
 
 ## Demo Video
