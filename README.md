@@ -67,40 +67,40 @@ Persists agent memory on the server in .memory-store.json
 Supports writing per-key values and reading full memory snapshots across sessions
 
 ## Pipeline Flow
-User PRD Input
-      │
-      ▼
-PlannerAgent
-  ├── Tool: validate_prd_quality
-  ├── Tool: suggest_layout_pattern
-  ├── Tool: search_component_library
-  ├── Generates ComponentTree (JSON)
-  ├── Stores in AgentMemory["library_suggestions"]
-  └── Stores in AgentMemory["component_tree"]
-      │
-      ▼
-GeneratorAgent
-  ├── Reads ComponentTree from AgentMemory
-  ├── For each component:
-  │     ├── Tool: validate_tsx_syntax
-  │     ├── Tool: check_accessibility
-  │     └── Yields { componentId, componentName, code }
-  └── Stores each in AgentMemory["code_{id}"]
-      │
-      ▼
-SummarizerAgent
-  ├── Reads PRD analysis + component tree + library suggestions from memory
-  ├── Produces developer-facing generation summary
-  └── Stores in AgentMemory["generation_summary"]
-      │
-      ▼
-Streaming API Route (/api/generate)
-      │
-      ▼
-useGenerate Hook (SSE consumer)
-      │
-      ▼
-3-Panel UI (PRD Editor | Tree View | Code Export)
+
+```mermaid
+graph TD
+    User([User PRD Input]) --> Planner[PlannerAgent]
+    
+    subgraph PlannerTools [Planner Tools]
+        Planner --> T1[validate_prd_quality]
+        Planner --> T2[suggest_layout_pattern]
+        Planner --> T3[search_component_library]
+    end
+    
+    Planner --> Memory[(AgentMemory)]
+    Memory -- "ComponentTree" --> Generator[GeneratorAgent]
+    
+    subgraph GeneratorTools [Generator Tools]
+        Generator --> T4[validate_tsx_syntax]
+        Generator --> T5[check_accessibility]
+    end
+    
+    Generator -- "TSX Code" --> Memory
+    Memory -- "All Context" --> Summarizer[SummarizerAgent]
+    Summarizer -- "Generation Summary" --> Memory
+    
+    Memory -. "SSE Stream" .-> API[Streaming API Route /api/generate]
+    API --> Hook[useGenerate Hook]
+    Hook --> UI[3-Panel UI]
+    
+    style User fill:#3b82f6,color:#fff,stroke:#1d4ed8
+    style Planner fill:#8b5cf6,color:#fff,stroke:#6d28d9
+    style Generator fill:#10b981,color:#fff,stroke:#047857
+    style Summarizer fill:#f59e0b,color:#fff,stroke:#b45309
+    style Memory fill:#64748b,color:#fff,stroke:#334155
+    style UI fill:#ec4899,color:#fff,stroke:#be185d
+```
 
 ## Tech Stack
 | Technology | Purpose |
