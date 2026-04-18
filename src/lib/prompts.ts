@@ -95,21 +95,30 @@ Requirements:
 - Use Tailwind CSS classes only; do not use inline styles.
 - Use accessible HTML: semantic elements where appropriate, aria-label (and other ARIA) when needed, and valid roles where appropriate.
 - Export the component as a named export (not default).
-- Use realistic placeholder content (copy, labels, sample list items) so the UI is reviewable.
+- Use realistic placeholder content (copy, labels, sample list items, Unsplash image URLs for avatars/products) so the UI is highly reviewable.
+- AESTHETICS ARE CRITICAL: Design a stunning, ultra-premium UI. Use modern spacing, subtle gradients (bg-gradient-to-r), soft drop-shadows (shadow-lg), large border radius (rounded-2xl), glassmorphism (bg-white/80 backdrop-blur-lg dark:bg-black/50), and interactive sub-elements (hover:scale-105 transition-all duration-300).
 - Use mobile-first responsive Tailwind classes, including sm:, md:, and lg: breakpoints where layout benefits from it.
-- Import React explicitly if the file uses JSX that requires it in the target environment (e.g. import React from "react" or the minimal hooks/types you need).
+- Import React explicitly if the file uses JSX. You may import icons from "lucide-react".
+- CRITICAL: Do NOT import any external libraries (like react-router-dom, framer-motion, date-fns, clsx, tailwind-merge) other than "react" and "lucide-react".
+- CRITICAL: Do NOT use relative imports for other components (e.g. \`import { Child } from './Child'\`). Instead, render placeholder \`<div>\` blocks for children or accept them as \`children\` props. You are generating this component in isolation.
 
 Return ONLY the raw TSX source code. Do not wrap the output in markdown fences. Do not add explanations before or after the code.`;
 }
 
 export const SAMPLE_PRDS: Record<string, string> = {
-  ecommerce: `Product: Checkout Experience — Scope: end-to-end purchase completion for logged-in and guest shoppers.
+  ecommerce: `Product: NextGen Luxury Checkout Experience — Scope: Complete, high-fidelity premium checkout flow for a modern lifestyle brand.
 
-We need a multi-step checkout covering cart review, shipping details, payment, and order confirmation. Cart review must show line items with thumbnails, quantities, editable counts, promo code entry, subtotal/tax/shipping estimates, and a clear primary action to continue. Shipping collects full address, delivery method, and optional saved addresses for signed-in users with validation and inline errors.
+We need a stunning, highly immersive checkout page. The layout should split into two primary columns: a left-side multi-step form area and a right-side sticky Cart Review sidebar.
 
-Payment supports card (PCI-aware fields UI only), billing address same-as-shipping toggle, and order summary sidebar sticky on large screens. Confirmation displays order number, estimated delivery, email receipt notice, and links to account orders or continue shopping.
+Left Column (Checkout Flow): 
+It should begin with a beautiful Checkout Title. 
+1. Shipping Details section: A sophisticated form collecting Full Name, Street Address, City, State, and ZIP Code. Use elegant floating-label inputs, smooth focus states, and subtle validation styling.
+2. Payment Method section: An ultra-premium credit card input interface. Must include fields for Card Number (with a subtle brand icon like Visa/Mastercard), Expiration Date (MM/YY), and CVV Code. Implement a sleek, interactive "Pay Now" primary button with a loading/hover state.
 
-Success metrics: lower checkout abandonment, fewer support tickets on address/payment errors, and mobile completion rate parity with desktop. Non-goals: full inventory management or admin tooling. Constraints: WCAG 2.1 AA, performance budget on mobile, and Tailwind-based implementation for rapid theming. Telemetry should capture step-level drop-off without storing full PAN data.`,
+Right Column (Cart Review):
+A glassmorphism-styled Order Summary panel. Show line items with high-quality thumbnail placeholders, quantity, and price. Include a subtotal, tax estimation, and a sleek promo-code entry field.
+
+Aesthetics are the absolute priority: The UI must look like an award-winning Dribbble design. Utilize extensive Tailwind features: deep soft shadows (shadow-xl), rounded-2xl containers, subtle gradients (bg-gradient-to-br), and high-contrast dark mode support.`,
 
   dashboard: `Product: SaaS Analytics Dashboard — Audience: account admins and operators monitoring product usage and revenue.
 

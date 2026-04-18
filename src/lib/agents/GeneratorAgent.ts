@@ -47,11 +47,23 @@ export const GENERATOR_TOOLS = [
 ];
 
 function stripMarkdownFences(text: string): string {
-  const trimmed = text.trim();
-  const match = trimmed.match(
-    /```(?:tsx|ts|jsx|js|javascript|typescript)?\s*([\s\S]*?)```/i,
+  let processed = text.trim();
+  
+  // 1. Try to match perfectly paired fences
+  const fullMatch = processed.match(
+    /```(?:tsx|ts|jsx|js|javascript|typescript|json)?\s*([\s\S]*?)```/i,
   );
-  return match ? match[1].trim() : trimmed;
+  if (fullMatch) {
+    return fullMatch[1].trim();
+  }
+
+  // 2. If no perfect pair, remove starting fence if it exists
+  processed = processed.replace(/^```(?:tsx|ts|jsx|js|javascript|typescript|json)?\s*/i, "");
+  
+  // 3. Remove ending fence if it exists
+  processed = processed.replace(/\s*```$/m, "");
+
+  return processed.trim();
 }
 
 function buildSiblingContext(components: ComponentNode[]): string {
